@@ -1,0 +1,20 @@
+{
+    "name": "shervin/php-jwt-restfulapi",
+    "description": "Simple PHP REST API with JWT authentication",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.1",
+        "ext-pdo": "*",
+        "firebase/php-jwt": "^6.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}

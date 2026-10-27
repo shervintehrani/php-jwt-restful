@@ -1,0 +1,6 @@
+# Apache به‌صورت پیش‌فرض هدر Authorization را به PHP پاس نمی‌دهد
+RewriteEngine On
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+
+Options -Indexes

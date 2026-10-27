@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Login</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-3" style="max-width: 480px">
+    <h2>Login</h2>
+    <form id="loginForm">
+        <div class="mb-3 mt-3">
+            <label for="user" class="form-label">User:</label>
+            <input type="text" class="form-control" id="user" placeholder="Enter username" autocomplete="username" required>
+        </div>
+        <div class="mb-3">
+            <label for="pass" class="form-label">Password:</label>
+            <input type="password" class="form-control" id="pass" placeholder="Enter password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+    <div id="alert" class="alert mt-3 d-none" role="alert"></div>
+    <pre id="output" class="mt-3"></pre>
+</div>
+<script>
+    // این صفحه از همان دامنه‌ی API سرو می‌شود (/front/login.html)؛ برای دامنه‌ی دیگر مقدار را تغییر دهید
+    const API_BASE = '';
+
+    const alertBox = document.getElementById('alert');
+    const output = document.getElementById('output');
+
+    function show(type, message) {
+        alertBox.className = 'alert mt-3 alert-' + type;
+        alertBox.textContent = message;
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        output.textContent = '';
+        try {
+            const loginRes = await fetch(API_BASE + '/login.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    user: document.getElementById('user').value,
+                    pass: document.getElementById('pass').value
+                })
+            });
+            const login = await loginRes.json();
+            if (!loginRes.ok) {
+                show('danger', login.error || 'Login failed');
+                return;
+            }
+
+            // توکن در sessionStorage نگه داشته می‌شود (با بستن تب پاک می‌شود)
+            sessionStorage.setItem('token', login.token);
+
+            const meRes = await fetch(API_BASE + '/me.php', {
+                headers: {'Authorization': 'Bearer ' + login.token}
+            });
+            const me = await meRes.json();
+            show(meRes.ok ? 'success' : 'danger', meRes.ok ? 'Login successful' : (me.error || 'Token rejected'));
+            output.textContent = JSON.stringify(me, null, 2);
+        } catch (err) {
+            show('danger', 'Network error: ' + err.message);
+        }
+    });
+</script>
+</body>
+</html>

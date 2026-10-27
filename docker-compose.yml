@@ -1,0 +1,36 @@
+services:
+  web:
+    build: .
+    ports:
+      - "10103:80"
+    environment:
+      DB_HOST: db
+      DB_NAME: api
+      DB_USER: api
+      DB_PASS: ${DB_PASS:-change-me}
+      JWT_SECRET: ${JWT_SECRET:?لطفاً JWT_SECRET را در فایل .env تنظیم کنید (openssl rand -base64 32)}
+      JWT_ISSUER: ${JWT_ISSUER:-http://localhost:10103}
+      JWT_TTL: ${JWT_TTL:-1200}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    volumes:
+      - db_data:/var/lib/mysql
+      # فایل‌های این پوشه فقط در اولین راه‌اندازی (دیتابیس خالی) به ترتیب اجرا می‌شوند
+      - ./database:/docker-entrypoint-initdb.d:ro
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-change-me-root}
+      MYSQL_DATABASE: api
+      MYSQL_USER: api
+      MYSQL_PASSWORD: ${DB_PASS:-change-me}
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  db_data:
